@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern CSS Animations - Interactive Examples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1e;
+            color: white;
+            padding: 3rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin: 3rem 0 1.5rem;
+            color: #4ecdc4;
+        }
+
+        .description {
+            color: #a0a0a0;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .demo-title {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: #45b7d1;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #4ecdc4;
+        }
+
+        /* 1. Fade In Animation */
+        .fade-in-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            animation: fadeIn 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeIn {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* 2. Slide In Animation */
+        .slide-in-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            animation: slideIn 2s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            0% { transform: translateX(-100%); opacity: 0; }
+            50% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* 3. Bounce Animation */
+        .bounce-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 15px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            25% { transform: translateY(-30px); }
+            50% { transform: translateY(0); }
+            75% { transform: translateY(-15px); }
+        }
+
+        /* 4. Rotate Animation */
+        .rotate-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            border-radius: 15px;
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 5. Scale Pulse */
+        .pulse-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* 6. Gradient Animation */
+        .gradient-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #ff6b6b);
+            background-size: 300% 300%;
+            border-radius: 15px;
+            animation: gradientShift 5s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 7. Shake Animation */
+        .shake-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);
+            border-radius: 15px;
+            animation: shake 0.5s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* 8. Flip Animation */
+        .flip-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            border-radius: 15px;
+            animation: flip 2s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        @keyframes flip {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        /* 9. Glow Effect */
+        .glow-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(102, 126, 234, 1),
+                            0 0 60px rgba(118, 75, 162, 0.8);
+            }
+        }
+
+        /* 10. Loading Spinner */
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(255, 255, 255, 0.1);
+            border-top: 8px solid #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 11. Typing Effect */
+        .typing-text {
+            font-size: 1.5rem;
+            font-family: 'Courier New', monospace;
+            border-right: 3px solid #4ecdc4;
+            white-space: nowrap;
+            overflow: hidden;
+            animation: typing 4s steps(40) infinite, blink 0.7s step-end infinite;
+        }
+
+        @keyframes typing {
+            0%, 100% { width: 0; }
+            50% { width: 100%; }
+        }
+
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+
+        /* 12. Wave Animation */
+        .wave-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .wave-dot {
+            width: 20px;
+            height: 20px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            animation: wave 1.4s ease-in-out infinite;
+        }
+
+        .wave-dot:nth-child(2) { animation-delay: 0.2s; }
+        .wave-dot:nth-child(3) { animation-delay: 0.4s; }
+        .wave-dot:nth-child(4) { animation-delay: 0.6s; }
+        .wave-dot:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes wave {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-20px); }
+        }
+
+        /* Interactive Hover Effects */
+        .hover-effects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .hover-box {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.3);
+        }
+
+        .hover-grow:hover {
+            transform: scale(1.1);
+        }
+
+        .hover-rotate:hover {
+            transform: rotate(5deg);
+        }
+
+        .hover-glow:hover {
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.8);
+        }
+
+        .hover-border:hover {
+            border: 3px solid #4ecdc4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Modern CSS Animations</h1>
+        <p class="description">
+            Explore powerful CSS animation techniques that bring your web pages to life. 
+            All animations use pure CSS - no JavaScript required!
+        </p>
+
+        <h2>Basic Animations</h2>
+        <div class="demo-grid">
+            <div class="demo-card">
+                <div class="demo-title">Fade In</div>
+                <div class="fade-in-box"></div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>animation: fadeIn 2s</code>
+                </p>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">Slide In</div>
+                <div class="slide-in-box"></div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>animation: slideIn 2s</code>
+                </p>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">Bounce</div>
+                <div class="bounce-box"></div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>animation: bounce 2s</code>
+                </p>
+            </div>
+        </div>
+
+        <h2>Advanced Animations</h2>
+        <div class="demo-grid">
+            <div class="demo-card">
+                <div class="demo-title">Continuous Rotation</div>
+                <div class="rotate-box"></div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>animation: rotate 3s linear infinite</code>
+                </p>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">Pulse Effect</div>
+                <div class="pulse-box"></div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>animation: pulse 1.5s infinite</code>
+                </p>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">Gradient Animation</div>
+                <div class="gradient-box"></div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>background-size: 300% 300%</code>
+                </p>
+            </div>
+        </div>
+
+        <h2>Complex Animations</h2>
+        <div class="demo-grid">
+            <div class="demo-card">
+                <div class="demo-title">Shake</div>
+                <div class="shake-box"></div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>animation: shake 0.5s infinite</code>
+                </p>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">3D Flip</div>
+                <div class="flip-box"></div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>transform: rotateY(180deg)</code>
+                </p>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">Glow Effect</div>
+                <div class="glow-box"></div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>box-shadow: 0 0 40px</code>
+                </p>
+            </div>
+        </div>
+
+        <h2>Loading Animations</h2>
+        <div class="demo-grid">
+            <div class="demo-card">
+                <div class="demo-title">Spinner</div>
+                <div style="display: flex; justify-content: center;">
+                    <div class="spinner"></div>
+                </div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>border-top: 8px solid</code>
+                </p>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">Wave Loader</div>
+                <div class="wave-container" style="justify-content: center;">
+                    <div class="wave-dot"></div>
+                    <div class="wave-dot"></div>
+                    <div class="wave-dot"></div>
+                    <div class="wave-dot"></div>
+                    <div class="wave-dot"></div>
+                </div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>animation-delay: 0.2s</code>
+                </p>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-title">Typing Effect</div>
+                <div class="typing-text">Hello, World!</div>
+                <p style="margin-top: 1rem; color: #888;">
+                    <code>animation: typing 4s steps(40)</code>
+                </p>
+            </div>
+        </div>
+
+        <h2>Hover Effects (Try hovering!)</h2>
+        <div class="hover-effects">
+            <div class="hover-box hover-lift">
+                <p>Lift</p>
+            </div>
+            <div class="hover-box hover-grow">
+                <p>Grow</p>
+            </div>
+            <div class="hover-box hover-rotate">
+                <p>Rotate</p>
+            </div>
+            <div class="hover-box hover-glow">
+                <p>Glow</p>
+            </div>
+            <div class="hover-box hover-border">
+                <p>Border</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 4rem; padding: 2rem; background: rgba(78, 205, 196, 0.1); border-radius: 15px;">
+            <h2 style="margin-top: 0;">Performance Tips</h2>
+            <ul style="list-style-position: inside; color: #a0a0a0;">
+                <li>Use <code>transform</code> and <code>opacity</code> for best performance</li>
+                <li>Avoid animating <code>width</code>, <code>height</code>, or <code>margin</code></li>
+                <li>Use <code>will-change</code> for complex animations</li>
+                <li>Keep animations under 60fps for smooth performance</li>
+                <li>Use <code>animation-play-state: paused</code> to control animations</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
