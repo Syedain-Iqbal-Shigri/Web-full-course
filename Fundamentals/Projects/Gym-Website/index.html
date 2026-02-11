@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS | Next-Gen Gym OS</title>
+    <style>
+        /* --- 1. DESIGN TOKENS & BASE --- */
+        :root {
+            /* Cyber-Fitness Palette */
+            --bg-deep: #030305;
+            --bg-panel: rgba(20, 20, 25, 0.6);
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(255, 255, 255, 0.2);
+            
+            /* Neon Accents */
+            --neon-green: #00ff9d;
+            --neon-green-dim: rgba(0, 255, 157, 0.15);
+            --neon-purple: #b026ff;
+            --neon-blue: #00d2ff;
+            
+            /* Typography */
+            --text-main: #ffffff;
+            --text-muted: #8b8b9b;
+            
+            /* Dimensions */
+            --sidebar-width: 260px;
+            --header-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Noise Texture Overlay */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* --- 2. LAYOUT GRID --- */
+        #app-root {
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            grid-template-rows: var(--header-height) 1fr;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- 3. COMPONENTS --- */
+        
+        /* Glass Panel Class */
+        .glass-panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Sidebar */
+        aside {
+            grid-row: 1 / -1;
+            grid-column: 1 / 2;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-glass);
+            background: rgba(5, 5, 8, 0.8);
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-main);
+        }
+        .brand-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            border-radius: 8px;
+            display: grid; place-items: center;
+            box-shadow: 0 0 15px var(--neon-green-dim);
+        }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .nav-item:hover {
+            background: var(--bg-glass);
+            color: var(--text-main);
+            transform: translateX(4px);
+        }
+        .nav-item.active {
+            background: var(--neon-green-dim);
+            color: var(--neon-green);
+            border: 1px solid rgba(0, 255, 157, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.05);
+        }
+        .nav-item svg { width: 20px; height: 20px; stroke-width: 2; }
+
+        /* Header */
+        header {
+            grid-column: 2 / -1;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2rem;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        /* Search Bar */
+        .search-trigger {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex; align-items: center; gap: 10px;
+            width: 300px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .search-trigger:hover { border-color: var(--border-highlight); color: var(--text-main); }
+        .kbd-shortcut {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: #fff;
+        }
+
+        /* Main Content */
+        main {
+            grid-column: 2 / -1;
+            grid-row: 2 / -1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* --- 4. ANIMATIONS & INTERACTION --- */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-enter { animation: slideUpFade 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
+
+        /* Chart SVG */
+        .chart-container { width: 100%; height: 300px; position: relative; overflow: hidden; }
+        svg.chart { width: 100%; height: 100%; overflow: visible; }
+        .chart-path {
+            fill: none;
+            stroke: var(--neon-green);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 157, 0.5));
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            animation: drawChart 2s ease-out forwards 0.5s;
+        }
+        @keyframes drawChart { to { stroke-dashoffset: 0; } }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary {
+            background: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+        }
+        .btn-primary:hover { box-shadow: 0 0 30px rgba(0, 255, 157, 0.5); transform: translateY(-1px); }
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* Booking Transaction UI */
+        .transaction-bar {
+            height: 4px; background: #222; border-radius: 2px; overflow: hidden; margin-top: 10px; width: 100%;
+        }
+        .transaction-progress {
+            height: 100%; width: 0%; background: var(--neon-purple); transition: width 0.2s;
+            box-shadow: 0 0 10px var(--neon-purple);
+        }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-dot.locked { background: var(--neon-purple); box-shadow: 0 0 8px var(--neon-purple); }
+        .status-dot.open { background: var(--text-muted); }
+        
+        /* Chat Typewriter */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+            color: var(--neon-green);
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Command Palette */
+        #cmd-palette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            z-index: 100; display: none; justify-content: center; padding-top: 15vh;
+        }
+        #cmd-palette.active { display: flex; }
+        .cmd-box {
+            width: 600px; background: #1a1a1f; border: 1px solid var(--border-highlight);
+            border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+        .cmd-input {
+            background: transparent; border: none; color: #fff; font-size: 1.2rem;
+            padding: 1.5rem; width: 100%; border-bottom: 1px solid #333;
+        }
+        .cmd-results { max-height: 300px; overflow-y: auto; padding: 0.5rem; }
+        .cmd-item {
+            padding: 12px 1.5rem; cursor: pointer; color: var(--text-muted);
+            display: flex; align-items: center; gap: 12px; border-radius: 8px;
+        }
+        .cmd-item:hover, .cmd-item.selected { background: #333; color: #fff; }
+
+        /* Drag & Drop */
+        .drop-zone {
+            border: 2px dashed var(--border-glass); border-radius: 12px;
+            min-height: 200px; padding: 2rem; transition: 0.2s; background: rgba(0,0,0,0.2);
+        }
+        .drop-zone.dragover { border-color: var(--neon-green); background: rgba(0, 255, 157, 0.05); }
+        .draggable {
+            background: #222; padding: 12px; margin-bottom: 8px; border-radius: 8px;
+            cursor: grab; border: 1px solid #333; display: flex; justify-content: space-between;
+        }
+        .draggable:active { cursor: grabbing; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 30px; right: 30px; background: #1a1a1f;
+            border-left: 4px solid var(--neon-green); padding: 16px 24px;
+            border-radius: 8px; color: #fff; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 200;
+        }
+        .toast.show { transform: translateX(0); }
+
+        /* Grid Utilities */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .h-full { height: 100%; }
+        .flex-col { display: flex; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+    <!-- CANVAS BACKGROUND -->
+    <canvas id="bg-canvas" style="position:fixed; top:0; left:0; z-index:0;"></canvas>
+
+    <!-- APP LAYOUT -->
+    <div id="app-root">
+        
+        <!-- SIDEBAR -->
+        <aside>
+            <div class="brand">
+                <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg></div>
+                NEXUS OS
+            </div>
+            
+            <nav id="nav-container">
+                <!-- Injected by JS -->
+            </nav>
+
+            <div style="margin-top: auto;" class="glass-panel" style="padding: 12px; border-radius: 12px;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <img src="https://picsum.photos/seed/nexus/50/50" style="border-radius: 50%; width: 40px; height: 40px;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 0.9rem;">Admin User</div>
+                        <div style="font-size: 0.75rem; color: var(--neon-green);">Online</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- HEADER -->
+        <header>
+            <h2 id="page-title" style="font-weight: 700; letter-spacing: -0.5px;">Dashboard</h2>
+            <div class="search-trigger" onclick="ui.toggleCmdPalette()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Search...
+                <span class="kbd-shortcut">⌘ K</span>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main id="main-view">
+            <!-- Views injected by JS -->
+        </main>
+    </div>
+
+    <!-- COMMAND PALETTE MODAL -->
+    <div id="cmd-palette" onclick="if(event.target===this) ui.toggleCmdPalette()">
+        <div class="cmd-box">
+            <input type="text" class="cmd-input" id="cmd-input" placeholder="What do you need?" autocomplete="off">
+            <div class="cmd-results" id="cmd-results"></div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span id="toast-msg">Operation Successful</span>
+    </div>
+
+    <!-- JAVASCRIPT ARCHITECTURE -->
+    <script>
+        /**
+         * 1. STATE MANAGEMENT (The Store)
+         * Centralized state with Subscription pattern
+         */
+        class Store {
+            constructor() {
+                this.state = {
+                    route: 'dashboard',
+                    classes: [
+                        { id: 1, name: 'Neuro-Cycle', time: '08:00 AM', cap: 10, booked: 8, instructor: 'Sarah' },
+                        { id: 2, name: 'Hyper-Gravity', time: '10:00 AM', cap: 15, booked: 15, instructor: 'Mike' },
+                        { id: 3, name: 'Cryo-Recovery', time: '05:00 PM', cap: 12, booked: 4, instructor: 'Alex' }
+                    ],
+                    exercises: [
+                        { id: 'e1', name: 'Quantum Squats', type: 'Legs' },
+                        { id: 'e2', name: 'Zero-G Bench', type: 'Chest' },
+                        { id: 'e3', name: 'Neural Deadlift', type: 'Back' }
+                    ],
+                    chat: [
+                        { role: 'ai', text: 'Nexus AI online. I have analyzed your biometrics. Ready to optimize.' }
+                    ]
+                };
+                this.listeners = [];
+            }
+
+            get(key) { return this.state[key]; }
+            
+            set(key, value) {
+                this.state[key] = value;
+                this.notify();
+            }
+
+            subscribe(fn) { this.listeners.push(fn); }
+            notify() { this.listeners.forEach(fn => fn(this.state)); }
+        }
+
+        /**
+         * 2. ROUTER & VIEW RENDERER
+         * Handles navigation and DOM injection
+         */
+        class Router {
+            constructor(store, ui) {
+                this.store = store;
+                this.ui = ui;
+                this.routes = {
+                    'dashboard': this.renderDashboard.bind(this),
+                    'booking': this.renderBooking.bind(this),
+                    'workouts': this.renderWorkouts.bind(this),
+                    'ai': this.renderAI.bind(this)
+                };
+            }
+
+            navigate(route) {
+                this.store.set('route', route);
+                this.updateSidebar(route);
+                document.getElementById('page-title').innerText = route.charAt(0).toUpperCase() + route.slice(1);
+                
+                const content = document.getElementById('main-view');
+                content.innerHTML = this.routes[route]();
+            }
+
+            updateSidebar(activeRoute) {
+                const nav = document.getElementById('nav-container');
+                const items = [
+                    { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>' },
+                    { id: 'booking', icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>' },
+                    { id: 'workouts', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>' },
+                    { id: 'ai', icon: '<path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12 2.1 12.05"></path><path d="M12 12 18.9 5.1"></path>' }
+                ];
+
+                nav.innerHTML = items.map(item => `
+                    <a class="nav-item ${item.id === activeRoute ? 'active' : ''}" onclick="app.router.navigate('${item.id}')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${item.icon}</svg>
+                        ${item.id.charAt(0).toUpperCase() + item.id.slice(1)}
+                    </a>
+                `).join('');
+            }
+
+            renderDashboard() {
+                return `
+                    <div class="animate-enter">
+                        <div class="grid-3">
+                            <div class="glass-panel" style="padding: 24px; border-radius: 16px;">
+                                <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:8px;">TOTAL REVENUE</div>
+                                <div style="font-size:2rem; font-weight:800;">$128,400</div>
+                                <div style="color:var(--neon-green); font-size:0.8rem; margin-top:4px;">▲ 14.5% vs last week</div>
+                            </div>
+                            <div class="glass-panel" style="padding: 24px; border-radius: 16px;">
+                                <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:8px;">ACTIVE MEMBERS</div>
+                                <div style="font-size:2rem; font-weight:800;">1,892</div>
+                                <div style="color:var(--neon-blue); font-size:0.8rem; margin-top:4px;">● Live Count</div>
+                            </div>
+                            <div class="glass-panel" style="padding: 24px; border-radius: 16px;">
+                                <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:8px;">SYSTEM STATUS</div>
+                                <div style="font-size:2rem; font-weight:800; color:var(--neon-green);">OPTIMAL</div>
+                                <div style="color:var(--text-muted); font-size:0.8rem; margin-top:4px;">Latency: 12ms</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel" style="padding: 24px; border-radius: 16px;">
+                            <h3 style="margin-bottom: 20px;">Performance Velocity</h3>
+                            <div class="chart-container">
+                                <svg class="chart" viewBox="0 0 800 300" preserveAspectRatio="none">
+                                    <defs>
+                                        <linearGradient id="chartGrad" x1="0" x2="0" y1="0" y2="1">
+                                            <stop offset="0%" stop-color="var(--neon-green)" stop-opacity="0.2"/>
+                                            <stop offset="100%" stop-color="var(--neon-green)" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M0,250 C100,250 150,150 250,180 C350,210 400,100 500,120 C600,140 650,50 800,80 V300 H0 Z" fill="url(#chartGrad)" />
+                                    <path class="chart-path" d="M0,250 C100,250 150,150 250,180 C350,210 400,100 500,120 C600,140 650,50 800,80" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderBooking() {
+                const classes = this.store.get('classes');
+                return `
+                    <div class="animate-enter">
+                        <div class="grid-2">
+                            <div class="flex-col gap-4">
+                                ${classes.map((c, i) => {
+                                    const pct = (c.booked / c.cap) * 100;
+                                    return `
+                                    <div class="glass-panel" style="padding: 24px; border-radius: 16px; animation-delay: ${i*0.1}s">
+                                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                                            <div>
+                                                <div style="font-weight:700; font-size:1.1rem;">${c.name}</div>
+                                                <div style="color:var(--text-muted); font-size:0.9rem;">${c.time} • ${c.instructor}</div>
+                                            </div>
+                                            <button class="btn btn-primary" id="btn-${c.id}" onclick="app.logic.bookClass(${c.id})">
+                                                ${c.booked >= c.cap ? 'Waitlist' : 'Book Now'}
+                                            </button>
+                                        </div>
+                                        <div style="margin-top: 16px;">
+                                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
+                                                <span>Occupancy</span>
+                                                <span style="color:${pct > 90 ? 'var(--neon-purple)' : 'var(--neon-green)'}">${c.booked}/${c.cap}</span>
+                                            </div>
+                                            <div style="height:6px; background:#222; border-radius:3px; overflow:hidden;">
+                                                <div style="width:${pct}%; height:100%; background:${pct > 90 ? 'var(--neon-purple)' : 'var(--neon-green)'}; transition: width 0.5s;"></div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                            
+                            <div class="glass-panel" style="padding: 24px; border-radius: 16px; display:flex; flex-direction:column;">
+                                <h3 style="margin-bottom:16px; color:var(--neon-purple);">Transaction Logs (Live)</h3>
+                                <div id="transaction-log" style="flex:1; background:#000; border-radius:8px; padding:16px; font-family:'Courier New', monospace; font-size:0.8rem; color:#0f0; overflow-y:auto;">
+                                    <div>> System Initialized...</div>
+                                    <div>> Connected to Shard: US-East-1</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderWorkouts() {
+                const ex = this.store.get('exercises');
+                return `
+                    <div class="animate-enter" style="height:100%; display:grid; grid-template-columns: 1fr 2fr; gap:24px;">
+                        <div class="glass-panel" style="padding:24px; border-radius:16px;">
+                            <h3 style="margin-bottom:20px;">Exercise Library</h3>
+                            ${ex.map(e => `
+                                <div class="draggable" draggable="true" ondragstart="app.logic.drag(event)" data-name="${e.name}">
+                                    <span>${e.name}</span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="glass-panel" style="padding:24px; border-radius:16px; display:flex; flex-direction:column;">
+                            <h3 style="margin-bottom:20px;">Program Constructor</h3>
+                            <div id="drop-zone" class="drop-zone" ondrop="app.logic.drop(event)" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+                                <div style="text-align:center; color:var(--text-muted); pointer-events:none; margin-top:60px;">
+                                    Drag modules here to initialize sequence
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="margin-top:20px; align-self:flex-end;" onclick="app.ui.toast('Program Compiled Successfully')">Compile Program</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderAI() {
+                const history = this.store.get('chat');
+                return `
+                    <div class="animate-enter" style="height:calc(100vh - 140px); display:flex; flex-direction:column;">
+                        <div class="glass-panel" style="flex:1; border-radius:16px; display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--neon-blue);">
+                            <div style="padding:16px; border-bottom:1px solid var(--border-glass); background:rgba(0,210,255,0.05);">
+                                <span style="color:var(--neon-blue); font-weight:700;">NEXUS AI v4.0</span> <span style="font-size:0.8rem; color:var(--text-muted);">• Online</span>
+                            </div>
+                            <div id="chat-feed" style="flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;">
+                                ${history.map(h => `
+                                    <div style="max-width:80%; padding:12px 16px; border-radius:12px; line-height:1.5; ${h.role === 'ai' ? 'background:rgba(255,255,255,0.05); align-self:flex-start; border:1px solid var(--border-glass);' : 'background:var(--neon-green); color:#000; align-self:flex-end;'}">
+                                        ${h.role === 'ai' ? '<span style="font-size:0.7rem; color:var(--neon-blue); display:block; margin-bottom:4px;">AI TRAINER</span>' : ''}
+                                        <span id="msg-${history.indexOf(h)}">${h.text}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div style="padding:16px; border-top:1px solid var(--border-glass); display:flex; gap:10px;">
+                                <input type="text" id="chat-input" class="glass-panel" style="flex:1; border:none; padding:12px; color:#fff;" placeholder="Enter command or query..." onkeypress="if(event.key==='Enter') app.logic.sendChat()">
+                                <button class="btn btn-primary" onclick="app.logic.sendChat()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * 3. UI MANAGER
+         * Handles Toasts, Modals, and Visual Feedback
+         */
+        class UIManager {
+            constructor() {
+                this.toastEl = document.getElementById('toast');
+                this.toastMsg = document.getElementById('toast-msg');
+                this.cmdPalette = document.getElementById('cmd-palette');
+                this.cmdInput = document.getElementById('cmd-input');
+                this.cmdResults = document.getElementById('cmd-results');
+            }
+
+            toast(msg) {
+                this.toastMsg.innerText = msg;
+                this.toastEl.classList.add('show');
+                setTimeout(() => this.toastEl.classList.remove('show'), 3000);
+            }
+
+            toggleCmdPalette() {
+                const isOpen = this.cmdPalette.classList.contains('active');
+                if(isOpen) {
+                    this.cmdPalette.classList.remove('active');
+                } else {
+                    this.cmdPalette.classList.add('active');
+                    this.cmdInput.focus();
+                    this.filterCmd('');
+                }
+            }
+
+            filterCmd(query) {
+                const commands = [
+                    { label: 'Go to Dashboard', action: () => app.router.navigate('dashboard') },
+                    { label: 'Book a Class', action: () => app.router.navigate('booking') },
+                    { label: 'Create Workout', action: () => app.router.navigate('workouts') },
+                    { label: 'Open AI Assistant', action: () => app.router.navigate('ai') },
+                    { label: 'System Reboot', action: () => location.reload() }
+                ];
+                
+                const filtered = commands.filter(c => c.label.toLowerCase().includes(query.toLowerCase()));
+                this.cmdResults.innerHTML = filtered.map(c => `
+                    <div class="cmd-item" onclick="(${c.action.toString()})(); ui.toggleCmdPalette()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        ${c.label}
+                    </div>
+                `).join('');
+            }
+        }
+
+        /**
+         * 4. BUSINESS LOGIC CONTROLLER
+         * Handles complex interactions like Booking, Drag/Drop, Chat
+         */
+        class LogicController {
+            constructor(store, ui, router) {
+                this.store = store;
+                this.ui = ui;
+                this.router = router;
+            }
+
+            async bookClass(id) {
+                const btn = document.getElementById(`btn-${id}`);
+                const log = document.getElementById('transaction-log');
+                
+                // 1. UI State Change (Locking)
+                const originalText = btn.innerText;
+                btn.innerText = "Locking...";
+                btn.disabled = true;
+                btn.style.opacity = "0.7";
+
+                // 2. Log Transaction Step 1
+                const step1 = document.createElement('div');
+                step1.innerHTML = `<span style="color:var(--neon-purple)">></span> INITIATING TRANSACTION (ISOLATION: SERIALIZABLE)`;
+                log.appendChild(step1);
+                log.scrollTop = log.scrollHeight;
+
+                await new Promise(r => setTimeout(r, 800)); // Simulate DB Latency
+
+                // 3. Log Transaction Step 2 (Lock Acquired)
+                const step2 = document.createElement('div');
+                step2.innerHTML = `<span class="status-dot locked"></span> ROW LOCK ACQUIRED ON ID:${id}`;
+                log.appendChild(step2);
+                log.scrollTop = log.scrollHeight;
+
+                await new Promise(r => setTimeout(r, 800));
+
+                // 4. Commit
+                const classes = this.store.get('classes');
+                const cls = classes.find(c => c.id === id);
+                
+                if(cls.booked < cls.cap) {
+                    cls.booked++;
+                    this.store.set('classes', classes);
+                    
+                    const step3 = document.createElement('div');
+                    step3.innerHTML = `<span style="color:var(--neon-green)">></span> COMMIT SUCCESSFUL. SPOT RESERVED.`;
+                    log.appendChild(step3);
+                    this.ui.toast('Booking Confirmed');
+                } else {
+                    const stepErr = document.createElement('div');
+                    stepErr.innerHTML = `<span style="color:red">> ERROR: Capacity Limit Reached. ROLLBACK.</span>`;
+                    log.appendChild(stepErr);
+                    this.ui.toast('Class Full', 'error');
+                }
+                
+                log.scrollTop = log.scrollHeight;
+                
+                // Refresh UI
+                this.router.navigate('booking');
+            }
+
+            drag(ev) {
+                ev.dataTransfer.setData("text", ev.target.getAttribute('data-name'));
+            }
+
+            drop(ev) {
+                ev.preventDefault();
+                ev.target.classList.remove('dragover');
+                const data = ev.dataTransfer.getData("text");
+                const zone = document.getElementById('drop-zone');
+                
+                // Clear placeholder if exists
+                if(zone.children.length === 1 && zone.children[0].style.textAlign === 'center') {
+                    zone.innerHTML = '';
+                }
+
+                const el = document.createElement('div');
+                el.className = 'draggable';
+                el.style.animation = 'slideUpFade 0.3s forwards';
+                el.innerHTML = `
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <div style="width:10px; height:10px; background:var(--neon-green); border-radius:50%;"></div>
+                        ${data}
+                    </div>
+                    <button onclick="this.parentElement.remove()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;">&times;</button>
+                `;
+                zone.appendChild(el);
+            }
+
+            async sendChat() {
+                const input = document.getElementById('chat-input');
+                const text = input.value.trim();
+                if(!text) return;
+
+                const history = this.store.get('chat');
+                history.push({ role: 'user', text });
+                this.store.set('chat', history);
+                this.router.navigate('ai'); // Re-render
+
+                // Simulate AI Typing
+                const response = "Analyzing biometric data... Based on your recovery score of 92%, I recommend increasing the load on compound movements by 5% today.";
+                
+                // Add empty AI message first
+                history.push({ role: 'ai', text: '' }); 
+                this.store.set('chat', history);
+                this.router.navigate('ai');
+
+                // Typewriter effect
+                const msgEl = document.getElementById(`msg-${history.length - 1}`);
+                msgEl.classList.add('typing-cursor');
+                
+                for(let i=0; i<response.length; i++) {
+                    msgEl.innerText += response.charAt(i);
+                    await new Promise(r => setTimeout(r, 30));
+                    // Scroll to bottom
+                    document.getElementById('chat-feed').scrollTop = document.getElementById('chat-feed').scrollHeight;
+                }
+                
+                msgEl.classList.remove('typing-cursor');
+                this.store.set('chat', history);
+            }
+        }
+
+        /**
+         * 5. CANVAS ENGINE (The Immersive Background)
+         * Custom particle network with mouse repulsion
+         */
+        class CanvasEngine {
+            constructor() {
+                this.canvas = document.getElementById('bg-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: null, y: null, radius: 150 };
+                
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                window.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.x;
+                    this.mouse.y = e.y;
+                });
+
+                this.initParticles();
+                this.animate();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            initParticles() {
+                const count = (window.innerWidth * window.innerHeight) / 15000;
+                for(let i=0; i<count; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        dx: (Math.random() - 0.5) * 0.5,
+                        dy: (Math.random() - 0.5) * 0.5,
+                        size: Math.random() * 2
+                    });
+                }
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.particles.forEach(p => {
+                    // Movement
+                    p.x += p.dx;
+                    p.y += p.dy;
+
+                    // Bounce
+                    if(p.x < 0 || p.x > this.canvas.width) p.dx *= -1;
+                    if(p.y < 0 || p.y > this.canvas.height) p.dy *= -1;
+
+                    // Mouse Interaction (Repulsion)
+                    let dx = this.mouse.x - p.x;
+                    let dy = this.mouse.y - p.y;
+                    let distance = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if(distance < this.mouse.radius && this.mouse.x !== null) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const force = (this.mouse.radius - distance) / this.mouse.radius;
+                        const directionX = forceDirectionX * force * 3;
+                        const directionY = forceDirectionY * force * 3;
+                        
+                        p.x -= directionX;
+                        p.y -= directionY;
+                    }
+
+                    // Draw Particle
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = 'rgba(0, 255, 157, 0.5)';
+                    this.ctx.fill();
+                });
+
+                // Draw Connections
+                this.connectParticles();
+                requestAnimationFrame(this.animate.bind(this));
+            }
+
+            connectParticles() {
+                for(let a=0; a<this.particles.length; a++) {
+                    for(let b=a; b<this.particles.length; b++) {
+                        let distance = ((this.particles[a].x - this.particles[b].x) * (this.particles[a].x - this.particles[b].x))
+                                     + ((this.particles[a].y - this.particles[b].y) * (this.particles[a].y - this.particles[b].y));
+                        
+                        if(distance < (this.canvas.width/7) * (this.canvas.height/7)) {
+                            let opacity = 1 - (distance / 20000);
+                            this.ctx.strokeStyle = `rgba(0, 255, 157, ${opacity * 0.15})`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(this.particles[a].x, this.particles[a].y);
+                            this.ctx.lineTo(this.particles[b].x, this.particles[b].y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * 6. APP INITIALIZATION
+         * Main Entry Point
+         */
+        class App {
+            constructor() {
+                this.store = new Store();
+                this.ui = new UIManager();
+                this.router = new Router(this.store, this.ui);
+                this.logic = new LogicController(this.store, this.ui, this.router);
+                this.canvas = new CanvasEngine();
+                
+                // Initialize Route
+                this.router.navigate('dashboard');
+
+                // Global Event Listeners for Shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                        e.preventDefault();
+                        this.ui.toggleCmdPalette();
+                    }
+                    if(e.key === 'Escape') {
+                        const p = document.getElementById('cmd-palette');
+                        if(p.classList.contains('active')) this.ui.toggleCmdPalette();
+                    }
+                });
+
+                // Command Palette Input Listener
+                document.getElementById('cmd-input').addEventListener('input', (e) => {
+                    this.ui.filterCmd(e.target.value);
+                });
+            }
+        }
+
+        // Boot the system
+        const app = new App();
+
+    </script>
+</body>
+</html>
