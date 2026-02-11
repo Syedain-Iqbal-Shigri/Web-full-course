@@ -28,7 +28,7 @@ Web-full-course/
 │   ├── state-management/
 │   └── async-programming/
 ├── 04-projects/
-│   ├── portfolio-website/
+│   ├── gym-website/
 │   ├── todo-app-react/
 │   └── weather-dashboard/
 └── assets/
