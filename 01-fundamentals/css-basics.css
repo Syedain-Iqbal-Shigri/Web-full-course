@@ -1,0 +1,449 @@
+  /* --- 1. DESIGN TOKENS & VARIABLES --- */
+        :root {
+            /* Palette: Milky / Clean / Luxury */
+            --bg-body: #F5F7FA;       /* Very light grey-blue tint */
+            --bg-card: #FFFFFF;       /* Pure thick white */
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            
+            --text-primary: #1A202C;  /* Soft black */
+            --text-secondary: #718096; /* Muted grey */
+            --accent-primary: #3182CE; /* Muted Royal Blue */
+            --accent-glow: rgba(49, 130, 206, 0.15);
+            
+            /* UI Elements */
+            --radius-sm: 8px;
+            --radius-lg: 24px;
+            --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            --shadow-float: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+            --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            
+            /* Typography */
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-code: 'SF Mono', 'Fira Code', 'Roboto Mono', monospace;
+            
+            /* Animation timings */
+            --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        /* --- 2. GLOBAL RESET & BASE --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* --- 3. UTILITY ANIMATIONS (The "Best in the World" Feel) --- */
+        
+        /* Scroll Reveal Utility */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1s var(--ease-out-quart), transform 1s var(--ease-out-quart);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Staggered delays */
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
+        .delay-300 { transition-delay: 0.3s; }
+
+        /* --- 4. NAVIGATION (Floating Glass) --- */
+        .navbar {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1200px;
+            height: 80px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 3rem;
+            z-index: 1000;
+            box-shadow: var(--shadow-glass);
+            transition: all 0.4s ease;
+        }
+
+        .navbar.scrolled {
+            top: 1rem;
+            width: 95%;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: -0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent-primary); }
+
+        .nav-links { display: flex; gap: 3rem; }
+        
+        .nav-link {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.3s var(--ease-out-quart);
+        }
+
+        .nav-link:hover { color: var(--text-primary); }
+        .nav-link:hover::after { width: 100%; }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: transform 0.3s var(--ease-out-quart), box-shadow 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        /* --- 5. HERO SECTION (3D & Animation Heavy) --- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background Blobs for Milky Depth */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: floatBlob 10s infinite alternate;
+            z-index: -1;
+        }
+        .blob-1 { top: 10%; left: 10%; width: 400px; height: 400px; background: #E6FFFA; }
+        .blob-2 { bottom: 10%; right: 10%; width: 500px; height: 500px; background: #EBF8FF; }
+
+        @keyframes floatBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -50px) scale(1.1); }
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 900px;
+            z-index: 1;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(49, 130, 206, 0.1);
+            color: var(--accent-primary);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 5rem;
+            line-height: 1.1;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #1A202C 0%, #4A5568 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 3D Floating Code Element */
+        .hero-visual {
+            position: absolute;
+            right: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 400px;
+            height: 500px;
+            perspective: 1000px;
+            display: none; /* Hidden on mobile */
+        }
+        
+        @media(min-width: 1024px) { .hero-visual { display: block; } }
+
+        .code-card-3d {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-card);
+            border-radius: 20px;
+            box-shadow: var(--shadow-float);
+            border: 1px solid rgba(255,255,255,0.8);
+            padding: 2rem;
+            transform-style: preserve-3d;
+            animation: floatCard 6s ease-in-out infinite;
+            font-family: var(--font-code);
+            font-size: 0.85rem;
+            color: #4A5568;
+            position: relative;
+        }
+
+        @keyframes floatCard {
+            0%, 100% { transform: translateY(0) rotateX(5deg) rotateY(-5deg); }
+            50% { transform: translateY(-20px) rotateX(0deg) rotateY(5deg); }
+        }
+
+        /* --- 6. THE LEARNING INTERFACE (Split Screen) --- */
+        .learning-section {
+            padding: 8rem 0;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-header h2 {
+            font-size: 3rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .interface-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            background: var(--bg-card);
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: var(--shadow-float);
+            border: 1px solid rgba(255,255,255,0.5);
+            align-items: start;
+        }
+
+        /* Left Side: Lesson Control */
+        .lesson-sidebar {
+            border-right: 1px solid #eee;
+            padding-right: 3rem;
+        }
+
+        .module-badge {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .lesson-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .lesson-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .lesson-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .lesson-btn {
+            background: transparent;
+            border: none;
+            text-align: left;
+            padding: 1.5rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            width: 100%;
+        }
+
+        .lesson-btn:hover { background: #F7FAFC; }
+        
+        .lesson-btn.active {
+            background: white;
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 12px rgba(49, 130, 206, 0.1);
+        }
+
+        .lesson-btn h4 { font-size: 1rem; margin-bottom: 0.25rem; }
+        .lesson-btn span { font-size: 0.85rem; color: var(--text-secondary); }
+
+        /* Right Side: Code & Live Preview */
+        .code-preview-area {
+            background: #F8F9FA;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+
+        .preview-header {
+            background: white;
+            padding: 1rem;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 6px;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .red { background: #FC8181; }
+        .yellow { background: #F6E05E; }
+        .green { background: #68D391; }
+
+        .code-display {
+            padding: 1.5rem;
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            color: #2D3748;
+            background: white;
+            flex: 1;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .keyword { color: #D53F8C; }
+        .tag { color: #3182CE; }
+        .attr { color: #38A169; }
+        .string { color: #D69E2E; }
+
+        .live-render {
+            height: 200px;
+            background: white;
+            border-top: 1px solid #E2E8F0;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- 7. TILT CARDS (Advanced Interaction) --- */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+        }
+
+        .tilt-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            box-shadow: var(--shadow-subtle);
+            transition: transform 0.1s; /* Quick JS response */
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .tilt-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.8), transparent 70%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .card-content { transform: translateZ(20px); position: relative; z-index: 2; }
+        
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background: #EDF2F7;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-primary);
+        }
+
+        /* --- 8. FOOTER --- */
+        footer {
+            background: white;
+            padding: 5rem 0;
+            border-top: 1px solid #eee;
+            margin-top: 5rem;
+            text-align: center;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 3rem; }
+            .interface-container { grid-template-columns: 1fr; }
+            .lesson-sidebar { border-right: none; padding-right: 0; border-bottom: 1px solid #eee; padding-bottom: 2rem; margin-bottom: 2rem; }
+            .navbar { display: none; } /* Simplified for this demo */
+        }
